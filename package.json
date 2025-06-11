@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "terser src/script.js -o dist/temp.min.js && javascript-obfuscator dist/temp.min.js --output dist/app.min.js && rm dist/temp.min.js"
+    "build": "terser src/script.js -o dist/temp.min.js && javascript-obfuscator dist/temp.min.js --output dist/app.min.js && del dist/temp.min.js || true"
   },
   "keywords": [],
   "author": "",
