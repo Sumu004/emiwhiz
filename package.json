@@ -1,0 +1,26 @@
+{
+  "name": "emiwhiz",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "terser src/script.js -o dist/temp.min.js && javascript-obfuscator dist/temp.min.js --output dist/app.min.js && rm dist/temp.min.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "javascript-obfuscator": "^4.1.1",
+    "terser": "^5.42.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Sumu004/emiwhiz.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Sumu004/emiwhiz/issues"
+  },
+  "homepage": "https://github.com/Sumu004/emiwhiz#readme"
+}
