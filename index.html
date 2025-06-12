@@ -183,7 +183,262 @@
   padding: 20px;
   margin-top: 30px;
 }
-
+.hero {
+            text-align: center;
+            margin-bottom: 80px;
+            text-align: justify;
+        }
+        
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: normal;
+            margin-bottom: 40px;
+            letter-spacing: 0px;
+        }
+        
+        .hero-text {
+            font-size: 1.4rem;
+            font-family: Georgia, 'Times New Roman', Times, serif;
+            font-style: italic;
+            line-height: 1.8;
+            max-width: 1200px;
+            margin: 0 auto;
+            color: #555;
+        }
+        
+        .hero-text strong {
+            color: #333;
+        }
+        
+        .section {
+            margin-bottom: 80px;
+        }
+        
+        .section h2 {
+            font-size: 2.2rem;
+            font-weight: normal;
+            margin-bottom: 30px;
+            color: #333;
+        }
+        
+        .section h3 {
+            font-size: 1.6rem;
+            font-weight: 500;
+            margin: 40px 0 20px 0;
+            color: #444;
+        }
+        
+        .section p {
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            color: #555;
+            text-align: justify;
+        }
+        
+        .definition {
+            background: #fff;
+            border-left: 4px solid #333;
+            padding: 30px;
+            margin: 40px 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .definition p {
+            margin: 0;
+            font-size: 1.3rem;
+            color: #333;
+        }
+        
+        .formula-section {
+            background: #fff;
+            padding: 40px;
+            margin: 40px 0;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .formula {
+            font-size: 2rem;
+            font-family: 'Times New Roman', serif;
+            color: #333;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+        
+        .components {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin: 40px 0;
+        }
+        
+        .component {
+            background: #fff;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .component h4 {
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        
+        .component p {
+            margin: 0;
+            font-size: 1rem;
+            color: #666;
+        }
+        
+        .calculator {
+            background: #fff;
+            padding: 40px;
+            margin: 60px 0;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.08);
+        }
+        
+        .calculator h3 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 1.8rem;
+        }
+        
+        .input-group {
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .input-group label {
+            font-size: 1.1rem;
+            color: #333;
+            font-weight: 500;
+            min-width: 200px;
+        }
+        
+        .input-group input {
+            border: 2px solid #eee;
+            padding: 12px 15px;
+            font-size: 1rem;
+            width: 150px;
+            border-radius: 4px;
+            transition: border-color 0.3s;
+        }
+        
+        .input-group input:focus {
+            outline: none;
+            border-color: #333;
+        }
+        
+        .btn-group {
+            text-align: center;
+            margin: 30px 0;
+        }
+        
+        .btn {
+            background: #333;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1rem;
+            cursor: pointer;
+            margin: 0 10px;
+            transition: background 0.3s;
+        }
+        
+        .btn:hover {
+            background: #555;
+        }
+        
+        .btn.reset {
+            background: #666;
+        }
+        
+        .result {
+            background: #f9f9f9;
+            border: 1px solid #eee;
+            padding: 30px;
+            margin-top: 30px;
+            text-align: center;
+            display: none;
+        }
+        
+        .result div {
+            margin: 10px 0;
+            font-size: 1.2rem;
+        }
+        
+        .result .main-result {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        
+        .benefits {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 40px 0;
+        }
+        
+        .benefit {
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .benefit h4 {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        .benefit p {
+            font-size: 0.95rem;
+            color: #666;
+            margin: 0;
+        }
+        
+        .applications {
+            list-style: none;
+            margin: 30px 0;
+        }
+        
+        .applications li {
+            padding: 15px 0;
+            border-bottom: 1px solid #eee;
+            font-size: 1.1rem;
+        }
+        
+        .applications li:last-child {
+            border-bottom: none;
+        }
+        
+        .applications strong {
+            color: #333;
+            margin-right: 15px;
+        }
+        
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .input-group {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .input-group label {
+                min-width: auto;
+            }
+            
+            .input-group input {
+                width: 100%;
+            }
+        }
         .remove-btn {
             background: #ef4444;
             color: white;
@@ -752,7 +1007,166 @@
                 transform: translateY(0); 
             }
         }
+.main-content {
+    padding: 0 24px;
+}
 
+.article-header {
+    text-align: center;
+    padding: 60px 0 40px;
+}
+
+.article-title {
+    font-size: 48px;
+    font-weight: 800;
+    color: #1a1a1a;
+    line-height: 1.1;
+    margin-bottom: 24px;
+    max-width: 1000px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.article-tags {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+}
+
+.tag {
+    color: #666;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.hero-section {
+    margin: 40px 0;
+    display: flex;
+    justify-content: center;
+}
+
+
+.hero-image {
+    width: 1200px;
+    height: 720px;
+    object-fit: cover;
+    border-radius: 26px;
+    display: block;
+    margin: 0 auto;
+}
+
+
+.content-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 40px;
+    margin-top: 32px;
+}
+
+
+.author-sidebar {
+    flex-shrink: 0;
+    width: 200px;
+}
+
+.author-card {
+    text-align: center;
+    padding: 24px 16px;
+}
+
+.author-avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    margin: 0 auto 16px;
+    overflow: hidden;
+}
+
+.author-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.author-name {
+    font-weight: 600;
+    font-size: 16px;
+    color: #1a1a1a;
+    margin-bottom: 4px;
+}
+
+.author-title {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 16px;
+}
+
+.reading-time {
+    font-size: 13px;
+    color: #4CAF50;
+    font-weight: 500;
+}
+
+.article-content {
+    flex: 1;
+    max-width: 1200px;
+    text-align: justify;
+
+}
+
+.article-intro {
+    font-size: 28px;
+    color: #666;
+    line-height: 1.6;
+    margin-bottom: 32px;
+    font-style: italic;
+}
+
+.article-text {
+    font-size: 24px;
+    line-height: 1.7;
+    color: #333;
+}
+
+.article-text p {
+    margin-bottom: 20px;
+}
+
+.highlight {
+    color: #4CAF50;
+    font-weight: 600;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+    .content-wrapper {
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    .author-sidebar {
+        width: 100%;
+    }
+
+    .author-card {
+        display: flex;
+        align-items: center;
+        text-align: left;
+        gap: 16px;
+        padding: 16px;
+    }
+
+    .author-avatar {
+        margin: 0;
+        width: 48px;
+        height: 48px;
+    }
+
+    .article-title {
+        font-size: 36px;
+    }
+}
         /* Responsive Design */
         @media (max-width: 768px) {
             .main-grid {
@@ -835,14 +1249,14 @@
     </style>
 </head>
 <body>
-  <header style="background: white; padding: 15px 0; border-bottom: 1px solid #e2e8f0; position: sticky; top: 0; z-index: 100;">
+  <header style="background: white; padding: 15px 0; border-bottom: 1px solid #e2e8f0; position: sticky; top: 0; z-index: 100; max-height: 80px; display: flex;">
     <div class="container" style="display: flex; justify-content: space-between; align-items: center;">
-      <div style="display: flex; align-items: center; gap: 8px;">
+      <div style="display: flex; align-items: center;">
         <a href="/" style="text-decoration: none;">
-  <img src="logo.png" alt="EMIWhiz Logo" style="height: 60px; display: block;" />
-</a>
-
+          <img src="logo.png" alt="EMIWhiz Logo" style="height: 60px; display: block;" />
+        </a>
       </div>
+
       <!-- <nav style="display: flex; align-items: center; gap: 30px;">
         <a href="#calculator" style="color: #64748b; text-decoration: none; font-weight: 500; transition: color 0.2s;">Calculator</a>
         <a href="#about" style="color: #64748b; text-decoration: none; font-weight: 500; transition: color 0.2s;">About</a>
@@ -855,7 +1269,7 @@
   <div class="container">
 
     <div class="header">
-      <h1><i class="fas fa-calculator"></i> Modern EMI Calculator</h1>
+      <h1> Modern EMI Calculator</h1>
       <p>Compare multiple loans and find the best option for your needs</p>
     </div>
 
@@ -937,10 +1351,10 @@
         </table>
       </div>
       <div class="action-buttons">
-        <button id="saveBtn" class="btn btn-primary">
+        <!-- <button id="saveBtn" class="btn btn-primary">
           <i class="fas fa-save"></i>
           Save Comparison
-        </button>
+        </button> -->
         <button id="downloadBtn" class="btn btn-secondary">
           <i class="fas fa-download"></i>
           Download CSV
@@ -990,6 +1404,95 @@
     <h3>Can I make partial prepayments?</h3>
     <p>Yes, EMIWhiz allows you to simulate partial prepayments and see how they reduce total interest and EMI duration.</p>
   </section> -->
+
+<div class="main-content">
+                <div class="article-header">
+                    <h1 class="article-title">EMI Masterclass: Learn Equated Monthly Installments from Scratch</h1>
+                    <div class="article-tags">
+                        <span class="tag">What is EMI?</span>   
+                        <span class="tag">Why Do EMIs Exist?</span>
+                        <span class="tag">Where Do We See EMIs?</span>
+                    </div>
+                </div>
+
+                <div class="hero-section">
+                    <img src="emi_representation.png" alt="EMI Representation" class="hero-image" > 
+                </div>
+
+                <main class="container">
+        <section class="hero">
+            <div class="hero-text">
+                Simply put, we believe <strong>financial literacy</strong> isn't just about numbers. It's a combination of <strong>understanding</strong> and <strong>practical application</strong> — and more over, <strong>EMI knowledge done right, has power</strong>. It shapes decisions, informs planning, and inspires confidence. And let me tell you, <strong>we do it right</strong>.
+            </div>
+        </section>
+
+        <section class="definition">
+            <p><strong>EMI (Equated Monthly Installment)</strong> is the fixed amount a borrower pays every month to repay a loan over a set period. Each EMI consists of a portion of the principal (original loan amount) and a portion of the interest charged by the lender.</p>
+        </section>
+
+        <section id="what" class="section">
+            <h2>What is an EMI?</h2>
+            <p>In the realm of personal and business finance, Equated Monthly Installment (EMI) has become a game-changing concept that simplifies how people manage large expenses. Whether you're purchasing a home, a car, electronic gadgets, or even funding higher education, EMI enables you to spread the cost over a specific period instead of paying the entire amount upfront. This makes high-value purchases more affordable and manageable, especially for individuals who prefer financial flexibility or have limited immediate liquidity.</p>
+            <p>An EMI is a fixed payment amount made by a borrower to a lender at a scheduled date each calendar month. The EMI typically includes both the interest on the loan and a portion of the principal amount, ensuring that the loan is paid off in full over time. Banks, non-banking financial companies (NBFCs), and digital lenders offer EMI options across various loan products like home loans, personal loans, auto loans, and consumer durable loans.</p>
+            <p>By converting a lump-sum obligation into smaller, periodic payments, EMI has revolutionized consumer behavior, boosted purchasing power, and promoted financial inclusion. Moreover, with tools like online EMI calculators and pre-approved loan offers, planning and managing EMIs has never been easier. Understanding how EMI works is essential for making informed financial decisions and maintaining long-term financial health.
+            </p>
+            
+        </section>
+
+        <section id="components" class="section">
+            <h2>Components of an EMI</h2>
+            
+            <div class="components">
+                <div class="component">
+                    <h4>Principal (P)</h4>
+                    <p>The amount you borrow</p>
+                    <p><em>Higher principal = Higher EMI</em></p>
+                </div>
+                <div class="component">
+                    <h4>Interest Rate (r)</h4>
+                    <p>The percentage charged by the lender annually</p>
+                    <p><em>Higher rate = Higher EMI</em></p>
+                </div>
+                <div class="component">
+                    <h4>Tenure (n)</h4>
+                    <p>Loan repayment period (months or years)</p>
+                    <p><em>Longer tenure = Lower EMI</em></p>
+                </div>
+                <div class="component">
+                    <h4>EMI</h4>
+                    <p>Monthly payment combining principal and interest</p>
+                    <p><em>Fixed amount throughout tenure</em></p>
+                </div>
+            </div>
+        </section>
+
+        <section id="formula" class="section">
+            <h2>The EMI Formula</h2>
+            <p>The mathematical foundation of EMI calculation lies in the time value of money principle. The formula accounts for the present value of future payments and the compounding effect of interest.
+By factoring in both the loan principal and the interest rate over the tenure, EMI ensures consistent payments throughout the repayment period.
+This standardized structure helps borrowers plan their finances better and avoid surprises in monthly budgeting.</p>
+            <img src="emi_f.png" alt="EMI Formula" width="600" height="600" style="display: block; margin: 50px auto;">
+
+        </section>
+<section class="definition">
+    
+    <p><strong>Example:</strong> Suppose you take a loan of ₹5,00,000 at an annual interest rate of 10% for a tenure of 5 years (60 months). The monthly interest rate (r) would be 10 ÷ 12 ÷ 100 = 0.00833, and the total number of EMIs (n) would be 60.</p>
+
+    <p>Using the formula:<br>
+    <code>EMI = [P × r × (1 + r)<sup>n</sup>] ÷ [(1 + r)<sup>n</sup> - 1]</code></p>
+
+    <p>Plugging in the values:<br>
+    EMI = [500000 × 0.00833 × (1 + 0.00833)<sup>60</sup>] ÷ [(1 + 0.00833)<sup>60</sup> - 1] ≈ ₹10,624</p>
+
+    <p>So, the borrower pays ₹10,624 per month for 60 months.</p>
+</section>
+
+
+
+    
+    </main>
+            </div>
+
 <footer style="background: #f8fafc; border-top: 1px solid #e2e8f0; padding: 40px 0;">
     <div class="container">
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-bottom: 30px;">
@@ -1004,12 +1507,12 @@
             Smart loan comparison tool to calculate EMIs, compare options, and make informed financial decisions.
           </p>
           <div style="display: flex; gap: 12px;">
-            <a href="#" class="social-icon" style="width: 32px; height: 32px; background: #0f172a; border-radius: 50%; display: flex; align-items: center; justify-content: center; text-decoration: none; transition: transform 0.2s;">
+            <!-- <a href="#" class="social-icon" style="width: 32px; height: 32px; background: #0f172a; border-radius: 50%; display: flex; align-items: center; justify-content: center; text-decoration: none; transition: transform 0.2s;">
               <i class="fab fa-twitter" style="color: white; font-size: 14px;"></i>
             </a>
             <a href="#" class="social-icon" style="width: 32px; height: 32px; background: #0f172a; border-radius: 50%; display: flex; align-items: center; justify-content: center; text-decoration: none; transition: transform 0.2s;">
               <i class="fab fa-linkedin" style="color: white; font-size: 14px;"></i>
-            </a>
+            </a> -->
           </div>
         </div>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
@@ -1038,5 +1541,6 @@
     </div>
   </footer>
     <script src="dist/app.min.js"></script>
+
 </body>
 </html>

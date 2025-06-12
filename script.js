@@ -5,8 +5,8 @@ class LoanCalculator {
     this.maxLoans = 4;
     this.savedData = null;
     this.initializeElements();
-    this.setupEventListeners();
     this.addInitialLoan();
+    this.setupEventListeners();
   }
 
   initializeElements() {
@@ -30,6 +30,7 @@ class LoanCalculator {
     this.saveBtn.addEventListener('click', () => this.saveComparison());
     this.downloadBtn.addEventListener('click', () => this.downloadCSV());
   }
+  
 
   createEnhancedPieChart(canvasId, data) {
     const ctx = document.getElementById(canvasId);
@@ -92,15 +93,15 @@ class LoanCalculator {
       <div class="input-group">
         <div class="form-field">
           <label>Loan Amount (₹)</label>
-          <input type="number" class="loan-principal" placeholder="Enter loan amount" min="1000" step="1000">
+          <input type="number" class="loan-principal" placeholder="500000" value="500000" min="1000" step="1000">
         </div>
         <div class="form-field">
           <label>Tenure (months)</label>
-          <input type="number" class="loan-tenure" placeholder="Enter tenure" min="1" max="360">
+          <input type="number" class="loan-tenure" placeholder="30" value="30" min="1" max="360">
         </div>
         <div class="form-field">
           <label>Interest Rate (% per annum)</label>
-          <input type="number" class="loan-rate" placeholder="Enter rate" min="0.1" max="50" step="0.01">
+          <input type="number" class="loan-rate" placeholder="8.5" value="8.5" min="0.1" max="50" step="0.01">
         </div>
         <div class="form-field">
           <label>Start Date</label>
@@ -121,6 +122,7 @@ class LoanCalculator {
 
   addInitialLoan() {
     this.addLoan();
+    this.calculateAll();
   }
 
   removeLoan(button) {
@@ -276,7 +278,11 @@ class LoanCalculator {
     this.summaryContent.innerHTML = `<div style="text-align: center; padding: 40px; color: #9ca3af;"><i class="fas fa-info-circle" style="font-size: 3rem; margin-bottom: 15px;"></i><p>Enter loan details to see your comparison</p></div>`;
   }
 
- drawEmiTimelineChart() {
+  
+
+ // ✅ Enhanced: hover based on color & balance line rendered on top
+
+drawEmiTimelineChart() {
   const container = document.getElementById('emiTimelineChart');
   if (!container) return;
 
@@ -289,13 +295,14 @@ class LoanCalculator {
   const tenures = document.querySelectorAll('.loan-tenure');
   const rates = document.querySelectorAll('.loan-rate');
   const startDates = document.querySelectorAll('.loan-start-date');
+  const viewModes = document.querySelectorAll('.loan-view-mode');
 
   const prepaymentPercent = parseFloat(this.prepaymentSlider.value) / 100;
   const chartColors = [
-    ['#2563eb', '#60a5fa'], // Loan 1
-    ['#16a34a', '#86efac'], // Loan 2
-    ['#db2777', '#f9a8d4'], // Loan 3
-    ['#7c3aed', '#c4b5fd'], // Loan 4
+    ['#7dd3fc', '#fca5a5', '#ef4444'],
+    ['#a5f3fc', '#fde68a', '#f43f5e'],
+    ['#c4b5fd', '#fcd34d', '#e11d48'],
+    ['#f0abfc', '#fdba74', '#be123c']
   ];
 
   const labels = [];
@@ -306,6 +313,7 @@ class LoanCalculator {
     const N = parseInt(tenures[i].value);
     const R = parseFloat(rates[i].value);
     const startDate = startDates[i].value;
+    const viewMode = viewModes[i]?.value || 'month';
 
     if (!P || !N || !R || !startDate) continue;
 
@@ -319,57 +327,87 @@ class LoanCalculator {
     const [startYear, startMonth] = startDate.split('-').map(Number);
     const start = new Date(startYear, startMonth - 1);
 
+    const yearBuckets = {};
+
     for (let m = 0; m < N; m++) {
       const interest = balance * r;
       const principalPart = emi - interest;
       balance = Math.max(0, balance - principalPart);
 
       const labelDate = new Date(start.getFullYear(), start.getMonth() + m);
-      const label = labelDate.toLocaleDateString('en-GB', { month: 'short', year: 'numeric' });
+      const monthLabel = labelDate.toLocaleDateString('en-GB', { month: 'short', year: 'numeric' });
+      const year = labelDate.getFullYear();
 
-      dateLabels.push(label);
-      principalParts.push(+principalPart.toFixed(2));
-      interestParts.push(+interest.toFixed(2));
-      balances.push(+balance.toFixed(2));
+      if (viewMode === 'calendar') {
+        if (!yearBuckets[year]) {
+          yearBuckets[year] = { principal: 0, interest: 0, balances: [] };
+        }
+        yearBuckets[year].principal += principalPart;
+        yearBuckets[year].interest += interest;
+        yearBuckets[year].balances.push(balance);
+      } else {
+        dateLabels.push(monthLabel);
+        principalParts.push(+principalPart.toFixed(2));
+        interestParts.push(+interest.toFixed(2));
+        balances.push(+balance.toFixed(2));
+      }
     }
 
-    // For first loan, populate global labels
+    if (viewMode === 'calendar') {
+      const years = Object.keys(yearBuckets).sort();
+      years.forEach(year => {
+        const y = yearBuckets[year];
+        const avgBalance = y.balances.reduce((a, b) => a + b, 0) / y.balances.length;
+        dateLabels.push(year);
+        principalParts.push(+y.principal.toFixed(2));
+        interestParts.push(+y.interest.toFixed(2));
+        balances.push(+avgBalance.toFixed(2));
+      });
+    }
+
     if (labels.length < dateLabels.length) {
       labels.length = 0;
       labels.push(...dateLabels);
     }
 
-    // Create dataset
-    const [primary, secondary] = chartColors[i % chartColors.length];
+    const [principalColor, interestColor, balanceColor] = chartColors[i % chartColors.length];
+
+    allDatasets.unshift({
+      type: 'line',
+      label: `Loan ${i + 1} - Balance`,
+      data: balances,
+      borderColor: balanceColor,
+      backgroundColor: balanceColor,
+      pointRadius: 5,
+      pointHoverRadius: 8,
+      pointHoverBorderColor: '#fff',
+      pointHoverBorderWidth: 2,
+      pointBackgroundColor: balanceColor,
+      fill: false,
+      borderWidth: 3,
+      yAxisID: 'y',
+      tension: 0.4,
+      order: 0
+    });
 
     allDatasets.push(
       {
         type: 'bar',
         label: `Loan ${i + 1} - Principal`,
         data: principalParts,
-        backgroundColor: primary,
+        backgroundColor: principalColor,
         stack: `loan${i}`,
-        yAxisID: 'y1'
+        yAxisID: 'y1',
+        hoverBackgroundColor: principalColor
       },
       {
         type: 'bar',
         label: `Loan ${i + 1} - Interest`,
         data: interestParts,
-        backgroundColor: secondary,
+        backgroundColor: interestColor,
         stack: `loan${i}`,
-        yAxisID: 'y1'
-      },
-      {
-        type: 'line',
-        label: `Loan ${i + 1} - Balance`,
-        data: balances,
-        borderColor: primary,
-        backgroundColor: primary,
-        borderWidth: 2,
-        pointRadius: 0,
-        fill: false,
-        yAxisID: 'y',
-        tension: 0.4
+        yAxisID: 'y1',
+        hoverBackgroundColor: interestColor
       }
     );
   }
@@ -381,6 +419,24 @@ class LoanCalculator {
       datasets: allDatasets
     },
     options: {
+      hover: {
+        mode: 'dataset',
+        onHover: (e, activeElements) => {
+          const chart = e.chart;
+          chart.data.datasets.forEach((ds, idx) => {
+            const isActive = activeElements.some(a => a.datasetIndex === idx);
+            chart.setDatasetVisibility(idx, true);
+            chart.getDatasetMeta(idx).hidden = false;
+            chart.getDatasetMeta(idx).elements.forEach(el => {
+              if (el) {
+                el.options.backgroundColor = isActive ? ds.backgroundColor : Chart.helpers.color(ds.backgroundColor).alpha(0.2).rgbString();
+                el.options.borderColor = isActive ? ds.borderColor || ds.backgroundColor : Chart.helpers.color(ds.borderColor || ds.backgroundColor).alpha(0.2).rgbString();
+              }
+            });
+          });
+          chart.draw();
+        }
+      },
       responsive: true,
       interaction: {
         mode: 'nearest',
@@ -398,6 +454,9 @@ class LoanCalculator {
           callbacks: {
             label: function (context) {
               return `${context.dataset.label}: ₹${Math.round(context.raw).toLocaleString('en-IN')}`;
+            },
+            title: function (items) {
+              return `${items[0].label}`;
             }
           }
         },
@@ -413,7 +472,7 @@ class LoanCalculator {
         x: {
           title: {
             display: true,
-            text: 'Month-Year'
+            text: viewModes[0]?.value === 'calendar' ? 'Year' : 'Month-Year'
           },
           ticks: {
             maxRotation: 45,
@@ -431,7 +490,7 @@ class LoanCalculator {
         y1: {
           type: 'linear',
           position: 'right',
-          title: { display: true, text: 'Monthly EMI Split (₹)' },
+          title: { display: true, text: 'EMI Payment (₹)' },
           grid: { drawOnChartArea: false },
           stacked: true,
           ticks: {
@@ -442,6 +501,10 @@ class LoanCalculator {
     }
   });
 }
+
+
+
+
 
 
 
@@ -605,3 +668,4 @@ class LoanCalculator {
 document.addEventListener('DOMContentLoaded', function () {
   window.loanCalculator = new LoanCalculator();
 });
+
