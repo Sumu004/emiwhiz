@@ -4,8 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "npx terser script.js -o dist/temp.min.js && npx javascript-obfuscator dist/temp.min.js --output dist/app.min.js && del dist/temp.min.js"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
