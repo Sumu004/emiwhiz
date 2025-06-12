@@ -4,7 +4,6 @@ class LoanCalculator {
     this.loanCount = 0;
     this.maxLoans = 4;
     this.savedData = null;
-    this.chart = null;
     this.initializeElements();
     this.setupEventListeners();
     this.addInitialLoan();
@@ -32,10 +31,54 @@ class LoanCalculator {
     this.downloadBtn.addEventListener('click', () => this.downloadCSV());
   }
 
+  createEnhancedPieChart(canvasId, data) {
+    const ctx = document.getElementById(canvasId);
+    if (!ctx) return;
+
+    new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        datasets: [{
+          data: [data.principal, data.totalInterest],
+          backgroundColor: ['#ff6b6b', '#4ecdc4'],
+          borderWidth: 0,
+          cutout: '75%',
+          circumference: 300,
+          rotation: -150
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                const label = context.dataIndex === 0 ? 'Principal' : 'Interest';
+                const value = context.parsed;
+                const percent = ((value / (data.principal + data.totalInterest)) * 100).toFixed(1);
+                return `${label}: ₹${value.toLocaleString('en-IN')} (${percent}%)`;
+              }
+            }
+          }
+        },
+        animation: {
+          animateRotate: true,
+          duration: 1500
+        }
+      }
+    });
+  }
+
   addLoan() {
     if (this.loanCount >= this.maxLoans) return;
 
     this.loanCount++;
+    
+    // Set default start date to current month
+    const currentDate = new Date();
+    const currentMonth = currentDate.toISOString().slice(0, 7); // YYYY-MM format
+    
     const loanDiv = document.createElement('div');
     loanDiv.className = 'loan-section fade-in';
     loanDiv.innerHTML = `
@@ -58,6 +101,17 @@ class LoanCalculator {
         <div class="form-field">
           <label>Interest Rate (% per annum)</label>
           <input type="number" class="loan-rate" placeholder="Enter rate" min="0.1" max="50" step="0.01">
+        </div>
+        <div class="form-field">
+          <label>Start Date</label>
+          <input type="month" class="loan-start-date" value="${currentMonth}" />
+        </div>
+        <div class="form-field">
+          <label>View Mode</label>
+          <select class="loan-view-mode">
+            <option value="month">Month-wise</option>
+            <option value="calendar">Calendar Year</option>
+          </select>
         </div>
       </div>
     `;
@@ -164,108 +218,315 @@ class LoanCalculator {
         <h3 class="result-title">Loan ${loanNumber}</h3>
         <div class="loan-badge">Details</div>
       </div>
-      <div class="metric"><div class="metric-label">Monthly EMI</div><div class="metric-value">₹${this.formatNumber(data.emi)}</div></div>
-      <div class="metric"><div class="metric-label">Total Interest</div><div class="metric-value">₹${this.formatNumber(data.totalInterest)}</div></div>
-      <div class="metric"><div class="metric-label">Total Payment</div><div class="metric-value">₹${this.formatNumber(data.totalPayment)}</div></div>
-      ${data.prepayment > 0 ? `<div class="metric"><div class="metric-label">Prepayment Made</div><div class="metric-value">₹${this.formatNumber(data.prepayment)}</div></div>` : ''}
-      <canvas id="pieChartLoan${loanNumber}" style="margin-top: 20px;"></canvas>
+      <div class="summary-grid">
+        <div class="metric"><div class="metric-label">Monthly EMI</div><div class="metric-value">₹${this.formatNumber(data.emi)}</div></div>
+        <div class="metric"><div class="metric-label">Total Interest</div><div class="metric-value">₹${this.formatNumber(data.totalInterest)}</div></div>
+        <div class="metric"><div class="metric-label">Total Payment</div><div class="metric-value">₹${this.formatNumber(data.totalPayment)}</div></div>
+        ${data.prepayment > 0 ? `<div class="metric"><div class="metric-label">Prepayment Made</div><div class="metric-value">₹${this.formatNumber(data.prepayment)}</div></div>` : ''}
+      </div>
+      <div class="chart-container">
+        <div class="chart-header">
+          <div class="chart-title">Payment Breakdown</div>
+          <div class="chart-subtitle">Principal vs Interest</div>
+        </div>
+        
+        <div class="donut-chart-container">
+          <canvas id="pieChartLoan${loanNumber}"></canvas>
+          <div class="chart-center-content">
+            <div class="center-label">Monthly EMI</div>
+            <div class="center-value">₹${this.formatNumber(data.emi)}</div>
+            <div class="center-sublabel">per month</div>
+          </div>
+        </div>
+        
+        <div class="chart-legend">
+          <div class="legend-item">
+            <div class="legend-color" style="background: #ff6b6b;"></div>
+            <div class="legend-text">Principal: ₹${this.formatNumber(data.principal)}</div>
+          </div>
+          <div class="legend-item">
+            <div class="legend-color" style="background: #4ecdc4;"></div>
+            <div class="legend-text">Interest: ₹${this.formatNumber(data.totalInterest)}</div>
+          </div>
+        </div>
+      </div>
     `;
 
     this.resultsGrid.appendChild(resultCard);
 
     setTimeout(() => {
-      const ctx = document.getElementById(`pieChartLoan${loanNumber}`).getContext('2d');
-      new Chart(ctx, {
-        type: 'pie',
-        data: {
-          labels: ['Principal', 'Interest'],
-          datasets: [{
-            data: [data.principal, data.totalInterest],
-            backgroundColor: ['#0f172a', '#ef4444']
-          }]
-        },
-        options: {
-          plugins: { legend: { position: 'bottom' } }
-        }
-      });
+      this.createEnhancedPieChart(`pieChartLoan${loanNumber}`, data);
     }, 100);
   }
 
   displaySummary(totalEMI, totalInterest, totalAmount, loanCount) {
     this.summaryContent.innerHTML = `
-      <div class="metric"><div class="metric-label">Total Monthly EMI</div><div class="metric-value">₹${this.formatNumber(totalEMI)}</div></div>
-      <div class="metric"><div class="metric-label">Total Interest</div><div class="metric-value">₹${this.formatNumber(totalInterest)}</div></div>
-      <div class="metric"><div class="metric-label">Total Amount</div><div class="metric-value">₹${this.formatNumber(totalAmount)}</div></div>
-      <div class="metric"><div class="metric-label">Active Loans</div><div class="metric-value">${loanCount}</div></div>
-      <canvas id="loanComparisonChart" style="margin-top: 30px; max-height: 300px;"></canvas>
+      <div class="summary-grid">
+        <div class="metric"><div class="metric-label">Total Monthly EMI</div><div class="metric-value">₹${this.formatNumber(totalEMI)}</div></div>
+        <div class="metric"><div class="metric-label">Total Interest</div><div class="metric-value">₹${this.formatNumber(totalInterest)}</div></div>
+        <div class="metric"><div class="metric-label">Total Amount</div><div class="metric-value">₹${this.formatNumber(totalAmount)}</div></div>
+        <div class="metric"><div class="metric-label">Active Loans</div><div class="metric-value">${loanCount}</div></div>
+      </div>
     `;
 
-    if (this.chart) this.chart.destroy();
-
-    const labels = [], dataPoints = [];
-    const principals = document.querySelectorAll('.loan-principal');
-    const tenures = document.querySelectorAll('.loan-tenure');
-    const rates = document.querySelectorAll('.loan-rate');
-    const prepaymentPercent = parseFloat(this.prepaymentSlider.value) / 100;
-
-    for (let i = 0; i < principals.length; i++) {
-      const P = parseFloat(principals[i].value);
-      const N = parseFloat(tenures[i].value);
-      const R = parseFloat(rates[i].value);
-      if (isNaN(P) || isNaN(N) || isNaN(R) || P <= 0 || N <= 0 || R <= 0) continue;
-
-      const effectiveP = P - (P * prepaymentPercent);
-      const r = R / 1200;
-      const emi = (effectiveP * r * Math.pow(1 + r, N)) / (Math.pow(1 + r, N) - 1);
-      labels.push(`Loan ${i + 1}`);
-      dataPoints.push(emi * N);
-    }
-
-    const ctx = document.getElementById('loanComparisonChart').getContext('2d');
-    this.chart = new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: labels,
-        datasets: [{
-          label: 'Total Payment (₹)',
-          data: dataPoints,
-          backgroundColor: '#0f172a'
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: { display: false }
-        },
-        scales: {
-          y: {
-            ticks: {
-              callback: value => '₹' + value.toLocaleString('en-IN')
-            }
-          }
-        }
-      }
-    });
+    this.drawEmiTimelineChart();
   }
 
   hideSummary() {
     this.summaryContent.innerHTML = `<div style="text-align: center; padding: 40px; color: #9ca3af;"><i class="fas fa-info-circle" style="font-size: 3rem; margin-bottom: 15px;"></i><p>Enter loan details to see your comparison</p></div>`;
   }
 
+ drawEmiTimelineChart() {
+  const container = document.getElementById('emiTimelineChart');
+  if (!container) return;
+
+  if (this.emiTimelineChart) {
+    this.emiTimelineChart.destroy();
+  }
+
+  const ctx = container.getContext('2d');
+  const principals = document.querySelectorAll('.loan-principal');
+  const tenures = document.querySelectorAll('.loan-tenure');
+  const rates = document.querySelectorAll('.loan-rate');
+  const startDates = document.querySelectorAll('.loan-start-date');
+
+  const prepaymentPercent = parseFloat(this.prepaymentSlider.value) / 100;
+  const chartColors = [
+    ['#2563eb', '#60a5fa'], // Loan 1
+    ['#16a34a', '#86efac'], // Loan 2
+    ['#db2777', '#f9a8d4'], // Loan 3
+    ['#7c3aed', '#c4b5fd'], // Loan 4
+  ];
+
+  const labels = [];
+  const allDatasets = [];
+
+  for (let i = 0; i < principals.length; i++) {
+    const P = parseFloat(principals[i].value);
+    const N = parseInt(tenures[i].value);
+    const R = parseFloat(rates[i].value);
+    const startDate = startDates[i].value;
+
+    if (!P || !N || !R || !startDate) continue;
+
+    const effectiveP = P - (P * prepaymentPercent);
+    const r = R / 1200;
+    const emi = (effectiveP * r * Math.pow(1 + r, N)) / (Math.pow(1 + r, N) - 1);
+
+    let balance = effectiveP;
+    const principalParts = [], interestParts = [], balances = [], dateLabels = [];
+
+    const [startYear, startMonth] = startDate.split('-').map(Number);
+    const start = new Date(startYear, startMonth - 1);
+
+    for (let m = 0; m < N; m++) {
+      const interest = balance * r;
+      const principalPart = emi - interest;
+      balance = Math.max(0, balance - principalPart);
+
+      const labelDate = new Date(start.getFullYear(), start.getMonth() + m);
+      const label = labelDate.toLocaleDateString('en-GB', { month: 'short', year: 'numeric' });
+
+      dateLabels.push(label);
+      principalParts.push(+principalPart.toFixed(2));
+      interestParts.push(+interest.toFixed(2));
+      balances.push(+balance.toFixed(2));
+    }
+
+    // For first loan, populate global labels
+    if (labels.length < dateLabels.length) {
+      labels.length = 0;
+      labels.push(...dateLabels);
+    }
+
+    // Create dataset
+    const [primary, secondary] = chartColors[i % chartColors.length];
+
+    allDatasets.push(
+      {
+        type: 'bar',
+        label: `Loan ${i + 1} - Principal`,
+        data: principalParts,
+        backgroundColor: primary,
+        stack: `loan${i}`,
+        yAxisID: 'y1'
+      },
+      {
+        type: 'bar',
+        label: `Loan ${i + 1} - Interest`,
+        data: interestParts,
+        backgroundColor: secondary,
+        stack: `loan${i}`,
+        yAxisID: 'y1'
+      },
+      {
+        type: 'line',
+        label: `Loan ${i + 1} - Balance`,
+        data: balances,
+        borderColor: primary,
+        backgroundColor: primary,
+        borderWidth: 2,
+        pointRadius: 0,
+        fill: false,
+        yAxisID: 'y',
+        tension: 0.4
+      }
+    );
+  }
+
+  this.emiTimelineChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: allDatasets
+    },
+    options: {
+      responsive: true,
+      interaction: {
+        mode: 'nearest',
+        axis: 'x',
+        intersect: false
+      },
+      plugins: {
+        title: {
+          display: true,
+          text: 'EMI Timeline - Principal vs Interest vs Balance',
+          font: { size: 16 }
+        },
+        tooltip: {
+          mode: 'index',
+          callbacks: {
+            label: function (context) {
+              return `${context.dataset.label}: ₹${Math.round(context.raw).toLocaleString('en-IN')}`;
+            }
+          }
+        },
+        legend: {
+          position: 'bottom',
+          labels: {
+            boxWidth: 16,
+            usePointStyle: true
+          }
+        }
+      },
+      scales: {
+        x: {
+          title: {
+            display: true,
+            text: 'Month-Year'
+          },
+          ticks: {
+            maxRotation: 45,
+            minRotation: 30
+          }
+        },
+        y: {
+          type: 'linear',
+          position: 'left',
+          title: { display: true, text: 'Remaining Balance (₹)' },
+          ticks: {
+            callback: val => '₹' + val.toLocaleString('en-IN')
+          }
+        },
+        y1: {
+          type: 'linear',
+          position: 'right',
+          title: { display: true, text: 'Monthly EMI Split (₹)' },
+          grid: { drawOnChartArea: false },
+          stacked: true,
+          ticks: {
+            callback: val => '₹' + val.toLocaleString('en-IN')
+          }
+        }
+      }
+    }
+  });
+}
+
+
+
   generateAmortizationSchedule(loanNumber, principal, emi, monthlyRate, tenure) {
     let balance = principal;
     let cumulativeInterest = 0;
 
+    const startDateInput = document.querySelectorAll('.loan-start-date')[loanNumber - 1];
+    const viewModeInput = document.querySelectorAll('.loan-view-mode')[loanNumber - 1];
+    const startDateValue = startDateInput?.value;
+    const viewMode = viewModeInput?.value || 'month';
+
+    // Parse the start date properly
+    let startDate = new Date();
+    if (startDateValue) {
+      const [year, month] = startDateValue.split('-');
+      startDate = new Date(parseInt(year), parseInt(month) - 1, 1);
+    }
+
+    // Create individual schedule container
+    const scheduleContainer = document.createElement('div');
+    scheduleContainer.className = 'individual-loan-schedule';
+    scheduleContainer.innerHTML = `
+      <h3 style="margin: 20px 0 10px; font-weight: 600; color: #1e293b;">
+        Loan ${loanNumber} Amortization Schedule
+      </h3>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Month</th>
+              <th>EMI</th>
+              <th>Principal</th>
+              <th>Interest</th>
+              <th>Balance</th>
+              <th>Total Paid</th>
+              <th>Cumulative Interest</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    `;
+
+    // Add to the main amortization section
+    this.amortizationSection.querySelector('.card-title').insertAdjacentElement('afterend', scheduleContainer);
+
+    const tbody = scheduleContainer.querySelector('tbody');
+
     for (let month = 1; month <= tenure; month++) {
       if (balance <= 0) break;
+      
       const interestAmount = balance * monthlyRate;
       const principalAmount = emi - interestAmount;
       balance = Math.max(0, balance - principalAmount);
       cumulativeInterest += interestAmount;
 
+      const status = balance <= 0 || month === tenure ? 'Completed' : 'Active';
+      const statusClass = balance <= 0 || month === tenure ? 'status-completed' : 'status-active';
+
+      let displayDate = '';
+      if (viewMode === 'calendar') {
+        const currentDate = new Date(startDate);
+        currentDate.setMonth(currentDate.getMonth() + (month - 1));
+        displayDate = currentDate.toLocaleDateString('en-US', { 
+          month: 'short', 
+          year: 'numeric' 
+        });
+      } else {
+        displayDate = `M${month}`;
+      }
+
       const row = document.createElement('tr');
-      row.innerHTML = `<td>${loanNumber}</td><td>${month}</td><td>₹${this.formatNumber(emi)}</td><td>₹${this.formatNumber(principalAmount)}</td><td>₹${this.formatNumber(interestAmount)}</td><td>₹${this.formatNumber(balance)}</td><td>₹${this.formatNumber(emi * month)}</td><td>₹${this.formatNumber(cumulativeInterest)}</td>`;
-      this.amortizationBody.appendChild(row);
+      row.innerHTML = `
+        <td>${displayDate}</td>
+        <td>₹${this.formatNumber(emi)}</td>
+        <td>₹${this.formatNumber(principalAmount)}</td>
+        <td>₹${this.formatNumber(interestAmount)}</td>
+        <td>₹${this.formatNumber(balance)}</td>
+        <td>₹${this.formatNumber(emi * month)}</td>
+        <td>₹${this.formatNumber(cumulativeInterest)}</td>
+        <td><span class="status-badge ${statusClass}">${status}</span></td>
+      `;
+      tbody.appendChild(row);
     }
   }
 
@@ -276,7 +537,10 @@ class LoanCalculator {
 
   clearResults() {
     this.resultsGrid.innerHTML = '';
-    this.amortizationBody.innerHTML = '';
+    
+    // Clear all individual loan schedules
+    const existingSchedules = this.amortizationSection.querySelectorAll('.individual-loan-schedule');
+    existingSchedules.forEach(schedule => schedule.remove());
   }
 
   formatNumber(num) {
@@ -289,7 +553,9 @@ class LoanCalculator {
       loans: Array.from(document.querySelectorAll('.loan-principal')).map((_, i) => ({
         principal: document.querySelectorAll('.loan-principal')[i].value,
         tenure: document.querySelectorAll('.loan-tenure')[i].value,
-        rate: document.querySelectorAll('.loan-rate')[i].value
+        rate: document.querySelectorAll('.loan-rate')[i].value,
+        startDate: document.querySelectorAll('.loan-start-date')[i].value,
+        viewMode: document.querySelectorAll('.loan-view-mode')[i].value
       }))
     };
 
@@ -304,17 +570,24 @@ class LoanCalculator {
   }
 
   downloadCSV() {
-    const rows = this.amortizationBody.querySelectorAll('tr');
-    if (rows.length === 0) {
+    const schedules = this.amortizationSection.querySelectorAll('.individual-loan-schedule');
+    if (schedules.length === 0) {
       alert('No data to download. Please calculate loans first.');
       return;
     }
 
-    let csv = 'Loan,Month,EMI,Principal,Interest,Balance,Total Payment,Cumulative Interest\n';
-    rows.forEach(row => {
-      const cells = row.querySelectorAll('td');
-      const rowData = Array.from(cells).map(cell => cell.textContent.replace(/₹|,/g, ''));
-      csv += rowData.join(',') + '\n';
+    let csv = 'Loan,Month,EMI,Principal,Interest,Balance,Total Payment,Cumulative Interest,Status\n';
+    
+    schedules.forEach((schedule, loanIndex) => {
+      const rows = schedule.querySelectorAll('tbody tr');
+      rows.forEach(row => {
+        const cells = row.querySelectorAll('td');
+        const rowData = [`Loan ${loanIndex + 1}`];
+        Array.from(cells).forEach(cell => {
+          rowData.push(cell.textContent.replace(/₹|,/g, ''));
+        });
+        csv += rowData.join(',') + '\n';
+      });
     });
 
     const blob = new Blob([csv], { type: 'text/csv' });
