@@ -596,6 +596,7 @@ drawEmiTimelineChart() {
   showResults() {
     this.resultsSection.classList.remove('hidden');
     this.amortizationSection.classList.remove('hidden');
+
   }
 
   clearResults() {
