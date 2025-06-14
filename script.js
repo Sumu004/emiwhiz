@@ -27,6 +27,18 @@ class LoanCalculator {
     this.addLoanBtn.addEventListener('click', () => this.addLoan());
     this.prepaymentSlider.addEventListener('input', (e) => this.updatePrepayment(e));
     this.loanContainer.addEventListener('input', () => this.calculateAll());
+    this.loanContainer.addEventListener('change', (e) => {
+      if (e.target.classList.contains('loan-capitalize-interest')) {
+        const parent = e.target.closest('.loan-section');
+        const simpleInterestGroup = parent.querySelector('.simple-interest-paid-group');
+        if (e.target.value === 'simple') {
+          simpleInterestGroup.style.display = 'block';
+        } else {
+          simpleInterestGroup.style.display = 'none';
+        }
+      }
+    });
+    
     this.saveBtn.addEventListener('click', () => this.saveComparison());
     this.downloadBtn.addEventListener('click', () => this.downloadCSV());
   }
@@ -121,8 +133,14 @@ class LoanCalculator {
         <select class="loan-capitalize-interest">
           <option value="yes">Yes (add to principal)</option>
           <option value="no">No (don't add)</option>
+          <option value="simple">Simple Interest Paid</option> <!-- ✅ new option -->
         </select>
       </div>
+      <div class="form-field simple-interest-paid-group" style="display: none;">
+  <label>Simple Interest per Month (₹)</label>
+  <input type="number" class="loan-simple-interest-paid" placeholder="e.g., 5000" min="0">
+</div>
+
     </div>
   `;
   this.loanContainer.appendChild(loanDiv);
@@ -182,36 +200,73 @@ class LoanCalculator {
     let totalInterest = 0;
     let totalAmount = 0;
 
-    for (let i = 0; i < principals.length; i++) {
-      const P = parseFloat(principals[i].value);
-      const N = parseFloat(tenures[i].value);
-      const R = parseFloat(rates[i].value);
+    
+for (let i = 0; i < principals.length; i++) {
+  const P = parseFloat(principals[i].value);
+  const N = parseFloat(tenures[i].value);
+  const R = parseFloat(rates[i].value);
+  const moratoriumMonths = parseInt(document.querySelectorAll('.loan-moratorium')[i].value) || 0;
+  const interestMode = document.querySelectorAll('.loan-capitalize-interest')[i].value;
+const capitalizeInterest = interestMode === 'yes';
+const simpleInterestPaidInput = document.querySelectorAll('.loan-simple-interest-paid')[i];
+const monthlySimpleInterestPaid = interestMode === 'simple' ? parseFloat(simpleInterestPaidInput?.value || 0) : 0;
+  const userPaidSimpleInterest = monthlySimpleInterestPaid * moratoriumMonths;
 
-      if (isNaN(P) || isNaN(N) || isNaN(R) || P <= 0 || N <= 0 || R <= 0) continue;
+  if (isNaN(P) || isNaN(N) || isNaN(R) || P <= 0 || N <= 0 || R <= 0) continue;
 
-      validLoans++;
-      const prepayment = P * prepaymentPercent;
-      const effectiveP = P - prepayment;
-      const monthlyRate = R / 1200;
-      const EMI = (effectiveP * monthlyRate * Math.pow(1 + monthlyRate, N)) /
-                  (Math.pow(1 + monthlyRate, N) - 1);
-      const totalPayment = EMI * N;
-      const totalInterestAmount = totalPayment - effectiveP;
+  validLoans++;
+  const prepayment = P * prepaymentPercent;
+  const effectiveP = P - prepayment;
+  const monthlyRate = R / 1200;
 
-      totalEMI += EMI;
-      totalInterest += totalInterestAmount;
-      totalAmount += totalPayment;
+  // Handle moratorium interest
+  let moratoriumInterest = 0;
+  let principalWithMoratorium = effectiveP;
+for (let m = 0; m < moratoriumMonths; m++) {
+  const interest = principalWithMoratorium * monthlyRate;
 
-      this.displayLoanResult(i + 1, {
-        emi: EMI,
-        totalPayment,
-        totalInterest: totalInterestAmount,
-        principal: effectiveP,
-        prepayment,
-        originalPrincipal: P
-      });
+  if (capitalizeInterest) {
+    principalWithMoratorium += interest;
+    moratoriumInterest += interest;
+  } else if (capitalizeInterest === 'no') {
+    moratoriumInterest += interest; // paid later
+ } else if (interestMode === 'simple') {
+  moratoriumInterest += interest;
+} 
+}
 
-      this.generateAmortizationSchedule(i + 1, effectiveP, EMI, monthlyRate, N);
+
+  const adjustedN = N - moratoriumMonths;
+  const EMI = (principalWithMoratorium * monthlyRate * Math.pow(1 + monthlyRate, adjustedN)) /
+              (Math.pow(1 + monthlyRate, adjustedN) - 1);
+  let totalPayment = EMI * adjustedN;
+if (!capitalizeInterest && interestMode !== 'simple') {
+  totalPayment += moratoriumInterest; // unpaid interest is added
+}
+
+  let totalInterestAmount = totalPayment - effectiveP;
+if (interestMode === 'simple') {
+  totalInterestAmount -= userPaidSimpleInterest;
+}
+
+
+  totalEMI += EMI;
+  totalInterest += totalInterestAmount;
+  totalAmount += totalPayment;
+
+this.displayLoanResult(i + 1, {
+  emi: EMI,
+  totalPayment,
+  totalInterest: totalInterestAmount,
+  principal: effectiveP,
+  prepayment,
+  originalPrincipal: P,
+  simpleInterestPaid: userPaidSimpleInterest // ✅ new
+});
+
+
+  this.generateAmortizationSchedule(i + 1, effectiveP, EMI, monthlyRate, N, moratoriumMonths, capitalizeInterest);
+
     }
 
     if (validLoans > 0) {
@@ -235,6 +290,7 @@ class LoanCalculator {
         <div class="metric"><div class="metric-label">Total Interest</div><div class="metric-value">₹${this.formatNumber(data.totalInterest)}</div></div>
         <div class="metric"><div class="metric-label">Total Payment</div><div class="metric-value">₹${this.formatNumber(data.totalPayment)}</div></div>
         ${data.prepayment > 0 ? `<div class="metric"><div class="metric-label">Prepayment Made</div><div class="metric-value">₹${this.formatNumber(data.prepayment)}</div></div>` : ''}
+        ${data.simpleInterestPaid > 0 ? `<div class="metric"><div class="metric-label">Simple Interest Paid</div><div class="metric-value">₹${this.formatNumber(data.simpleInterestPaid)}</div></div>` : ''}
       </div>
       <div class="chart-container">
         <div class="chart-header">
@@ -262,6 +318,8 @@ class LoanCalculator {
           </div>
         </div>
       </div>
+      
+
     `;
 
     this.resultsGrid.appendChild(resultCard);
@@ -272,13 +330,30 @@ class LoanCalculator {
   }
 
   displaySummary(totalEMI, totalInterest, totalAmount, loanCount) {
+    let totalSimpleInterestPaid = 0;
+const simpleInputs = document.querySelectorAll('.loan-simple-interest-paid');
+const modes = document.querySelectorAll('.loan-capitalize-interest');
+const moratoriums = document.querySelectorAll('.loan-moratorium');
+
+for (let i = 0; i < simpleInputs.length; i++) {
+  if (modes[i].value === 'simple') {
+    const monthly = parseFloat(simpleInputs[i].value || 0);
+    const months = parseInt(moratoriums[i].value || 0);
+    totalSimpleInterestPaid += monthly * months;
+  }
+}
+
+
     this.summaryContent.innerHTML = `
       <div class="summary-grid">
         <div class="metric"><div class="metric-label">Total Monthly EMI</div><div class="metric-value">₹${this.formatNumber(totalEMI)}</div></div>
         <div class="metric"><div class="metric-label">Total Interest</div><div class="metric-value">₹${this.formatNumber(totalInterest)}</div></div>
         <div class="metric"><div class="metric-label">Total Amount</div><div class="metric-value">₹${this.formatNumber(totalAmount)}</div></div>
+        ${totalSimpleInterestPaid > 0 ? `<div class="metric"><div class="metric-label">Simple Interest Paid</div><div class="metric-value">₹${this.formatNumber(totalSimpleInterestPaid)}</div></div>` : ''}
         <div class="metric"><div class="metric-label">Active Loans</div><div class="metric-value">${loanCount}</div></div>
       </div>
+      
+
     `;
 
     this.drawEmiTimelineChart();
@@ -518,9 +593,11 @@ drawEmiTimelineChart() {
 
 
 
-  generateAmortizationSchedule(loanNumber, principal, emi, monthlyRate, tenure) {
+  generateAmortizationSchedule(loanNumber, principal, emi, monthlyRate, tenure, moratoriumMonths = 0, capitalizeInterest = false) {
     let balance = principal;
     let cumulativeInterest = 0;
+    let totalSimpleInterestPaid = 0;
+
 
     const startDateInput = document.querySelectorAll('.loan-start-date')[loanNumber - 1];
     const viewModeInput = document.querySelectorAll('.loan-view-mode')[loanNumber - 1];
@@ -565,13 +642,31 @@ drawEmiTimelineChart() {
 
     const tbody = scheduleContainer.querySelector('tbody');
 
-    for (let month = 1; month <= tenure; month++) {
-      if (balance <= 0) break;
-      
-      const interestAmount = balance * monthlyRate;
-      const principalAmount = emi - interestAmount;
+    
+
+for (let month = 1; month <= tenure; month++) {
+  let interestAmount = 0;
+  let principalAmount = 0;
+
+  if (month <= moratoriumMonths) {
+  interestAmount = balance * monthlyRate;
+  if (capitalizeInterest === 'yes') {
+    principalAmount = 0;
+    balance += interestAmount;
+  } else if (capitalizeInterest === 'no') {
+    principalAmount = 0;
+ } else if (capitalizeInterest === 'simple') {
+  principalAmount = 0;
+  totalSimpleInterestPaid += interestAmount;
+}
+} else {
+      interestAmount = balance * monthlyRate;
+      principalAmount = emi - interestAmount;
       balance = Math.max(0, balance - principalAmount);
-      cumulativeInterest += interestAmount;
+    }
+    cumulativeInterest += interestAmount;
+    const currentEMI = (month <= moratoriumMonths && capitalizeInterest === 'simple') ? interestAmount : emi;
+
 
       const status = balance <= 0 || month === tenure ? 'Completed' : 'Active';
       const statusClass = balance <= 0 || month === tenure ? 'status-completed' : 'status-active';
@@ -591,16 +686,22 @@ drawEmiTimelineChart() {
       const row = document.createElement('tr');
       row.innerHTML = `
         <td>${displayDate}</td>
-        <td>₹${this.formatNumber(emi)}</td>
+        <td>₹${this.formatNumber(currentEMI)}</td>
         <td>₹${this.formatNumber(principalAmount)}</td>
         <td>₹${this.formatNumber(interestAmount)}</td>
         <td>₹${this.formatNumber(balance)}</td>
-        <td>₹${this.formatNumber(emi * month)}</td>
+        <td>₹${this.formatNumber(currentEMI * month)}</td>
         <td>₹${this.formatNumber(cumulativeInterest)}</td>
         <td><span class="status-badge ${statusClass}">${status}</span></td>
       `;
       tbody.appendChild(row);
     }
+    if (capitalizeInterest === 'simple' && totalSimpleInterestPaid > 0) {
+  const infoRow = document.createElement('div');
+  infoRow.style = "margin: 10px 0; color: #1e293b; font-weight: 500;";
+  infoRow.innerHTML = `Simple Interest Paid during Moratorium: ₹${this.formatNumber(totalSimpleInterestPaid)}`;
+  scheduleContainer.insertBefore(infoRow, scheduleContainer.querySelector('.table-container'));
+}
   }
 
   showResults() {
