@@ -71,54 +71,63 @@ class LoanCalculator {
     });
   }
 
-  addLoan() {
-    if (this.loanCount >= this.maxLoans) return;
+    addLoan() {
+  if (this.loanCount >= this.maxLoans) return;
+  this.loanCount++;
 
-    this.loanCount++;
-    
-    // Set default start date to current month
-    const currentDate = new Date();
-    const currentMonth = currentDate.toISOString().slice(0, 7); // YYYY-MM format
-    
-    const loanDiv = document.createElement('div');
-    loanDiv.className = 'loan-section fade-in';
-    loanDiv.innerHTML = `
-      <div class="loan-header">
-        <h3 class="loan-title">
-          <i class="fas fa-home"></i>
-          Loan ${this.loanCount}
-        </h3>
-        ${this.loanCount > 1 ? `<button class="remove-btn" onclick="loanCalculator.removeLoan(this)"><i class="fas fa-trash"></i> Remove</button>` : ''}
+  const currentDate = new Date();
+  const currentMonth = currentDate.toISOString().slice(0, 7);
+
+  const loanDiv = document.createElement('div');
+  loanDiv.className = 'loan-section fade-in';
+  loanDiv.innerHTML = `
+    <div class="loan-header">
+      <h3 class="loan-title">
+        <i class="fas fa-home"></i>
+        Loan ${this.loanCount}
+      </h3>
+      ${this.loanCount > 1 ? `<button class="remove-btn" onclick="loanCalculator.removeLoan(this)"><i class="fas fa-trash"></i> Remove</button>` : ''}
+    </div>
+    <div class="input-group">
+      <div class="form-field">
+        <label>Loan Amount (₹)</label>
+        <input type="number" class="loan-principal" placeholder="500000" value="500000" min="1000" step="1000">
       </div>
-      <div class="input-group">
-        <div class="form-field">
-          <label>Loan Amount (₹)</label>
-          <input type="number" class="loan-principal" placeholder="500000" value="500000" min="1000" step="1000">
-        </div>
-        <div class="form-field">
-          <label>Tenure (months)</label>
-          <input type="number" class="loan-tenure" placeholder="30" value="30" min="1" max="360">
-        </div>
-        <div class="form-field">
-          <label>Interest Rate (% per annum)</label>
-          <input type="number" class="loan-rate" placeholder="8.5" value="8.5" min="0.1" max="50" step="0.01">
-        </div>
-        <div class="form-field">
-          <label>Start Date</label>
-          <input type="month" class="loan-start-date" value="${currentMonth}" />
-        </div>
-        <div class="form-field">
-          <label>View Mode</label>
-          <select class="loan-view-mode">
-            <option value="month">Month-wise</option>
-            <option value="calendar">Calendar Year</option>
-          </select>
-        </div>
+      <div class="form-field">
+        <label>Tenure (months)</label>
+        <input type="number" class="loan-tenure" placeholder="30" value="30" min="1" max="360">
       </div>
-    `;
-    this.loanContainer.appendChild(loanDiv);
-    this.updateAddButton();
-  }
+      <div class="form-field">
+        <label>Interest Rate (% p.a.)</label>
+        <input type="number" class="loan-rate" placeholder="8.5" value="8.5" min="0.1" max="50" step="0.01">
+      </div>
+      <div class="form-field">
+        <label>Start Date</label>
+        <input type="month" class="loan-start-date" value="${currentMonth}" />
+      </div>
+      <div class="form-field">
+        <label>View Mode</label>
+        <select class="loan-view-mode">
+          <option value="month">Month-wise</option>
+          <option value="calendar">Calendar Year</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label>Moratorium Period (months)</label>
+        <input type="number" class="loan-moratorium" placeholder="0" value="0" min="0" max="36">
+      </div>
+      <div class="form-field">
+        <label>Interest Capitalized?</label>
+        <select class="loan-capitalize-interest">
+          <option value="yes">Yes (add to principal)</option>
+          <option value="no">No (don't add)</option>
+        </select>
+      </div>
+    </div>
+  `;
+  this.loanContainer.appendChild(loanDiv);
+  this.updateAddButton();
+}
 
   addInitialLoan() {
     this.addLoan();
@@ -164,6 +173,7 @@ class LoanCalculator {
     const tenures = document.querySelectorAll('.loan-tenure');
     const rates = document.querySelectorAll('.loan-rate');
     const prepaymentPercent = parseFloat(this.prepaymentSlider.value) / 100;
+    
 
     this.clearResults();
 
